@@ -1,18 +1,20 @@
 package com.craftmanship;
 
 public class Minesweeper {
+	
 	public static void main(String[] args) {
 		int m = Integer.parseInt(args[0]);
 		int n = Integer.parseInt(args[1]);
 		int k = Integer.parseInt(args[2]);
-		int[][] mine = new int[m][n];
-		// put the mines
-		for (int z = 0; z < k; z++) {
-			int randomX = (int) (Math.random() * m);
-			int randomY = (int) (Math.random() * n);
-			mine[randomX][randomY] = 5;
-		}
 
+		int[][] mine = initialiseGrid(m, n, k);
+
+		calculateNeighbours(m, n, mine);
+		
+		printOutTheGrid(m, n, mine);
+	}
+
+	static void calculateNeighbours(int m, int n, int[][] mine) {
 		for (int y = 0; y < n; y++) {
 			for (int x = 0; x < m; x++) {
 				// first row of the grid
@@ -49,7 +51,7 @@ public class Minesweeper {
 					}
 				}
 				// mid rows
-				else if (y > 0 && y < n - 1) {
+				else if (y < n - 1) {
 					// left side
 					if (x == 0) {
 						if (mine[x][y - 1] >= 5) {
@@ -91,7 +93,7 @@ public class Minesweeper {
 					}
 				}
 				// bottom row
-				else if (y == n - 1) {
+				else {
 					// bottom left corner
 					if (x == 0) {
 						if (mine[x + 1][y] >= 5) {
@@ -125,6 +127,9 @@ public class Minesweeper {
 				}
 			}
 		}
+	}
+
+	static void printOutTheGrid(int m, int n, int[][] mine) {
 		// print out the grid
 		for (int y = 0; y < n; y++) {
 			for (int x = 0; x < m; x++) {
@@ -146,5 +151,16 @@ public class Minesweeper {
 				}
 			}
 		}
+	}
+
+	static int[][] initialiseGrid(int m, int n, int k) {
+		int[][] mine = new int[m][n];
+		// put the mines
+		for (int z = 0; z < k; z++) {
+			int randomX = (int) (Math.random() * m);
+			int randomY = (int) (Math.random() * n);
+			mine[randomX][randomY] = 5;
+		}
+		return mine;
 	}
 }
