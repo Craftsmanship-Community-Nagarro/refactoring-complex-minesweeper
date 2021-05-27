@@ -1,1 +1,2 @@
-# refactoring-complex-minesweeper
+# Refactoring of a complex minesweeper solution
+
