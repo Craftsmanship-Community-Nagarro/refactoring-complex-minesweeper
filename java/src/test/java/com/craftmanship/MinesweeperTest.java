@@ -1,77 +1,81 @@
 package com.craftmanship;
 
+import org.approvaltests.Approvals;
+import org.approvaltests.reporters.JunitReporter;
+import org.approvaltests.reporters.UseReporter;
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.stream.Stream;
 
-import org.approvaltests.Approvals;
-import org.approvaltests.core.Options;
-import org.approvaltests.reporters.JunitReporter;
-import org.approvaltests.reporters.QuietReporter;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
+@UseReporter(JunitReporter.class)
 public class MinesweeperTest {
-	
-	private static Stream<Arguments> provideBoard() {
-		return Stream.of(
-				Arguments.of(new int[][] { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 5, 0 }, { 0, 0, 0, 0 } })
-				);
-	}
 
-	@ParameterizedTest(name = "#{index} - Test with {0} and {1}")
-	@MethodSource("provideBoard")
-	public void runMinesweeper(int[][] board) throws FileNotFoundException {
-		Minesweeper.calculateNeighbours(board.length, board[0].length, board);
+    @Test
+    public void shouldSolveBoardWithMultipleBombs() throws FileNotFoundException {
+        int[][] board = new int[][]{
+                {0, 0, 0, 0, 0},
+                {5, 0, 0, 5, 0},
+                {5, 5, 0, 5, 5},
+                {0, 0, 0, 0, 0}
+        };
 
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		System.setOut(new PrintStream(out));
+        String solvedBoard = solvedBoard(board);
 
-		Minesweeper.printOutTheGrid(board.length, board[0].length, board);
+        Approvals.verify(solvedBoard);
+    }
 
-		Approvals.verify(out.toString(), new Options().withReporter(QuietReporter.INSTANCE));
-	}
+    @Test
+    public void solvedBoardWithBombsInCorners() throws FileNotFoundException {
+        int[][] board = new int[][]{
+                {5, 0, 0, 5},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0},
+                {5, 0, 0, 5}
+        };
 
+        String solvedBoard = solvedBoard(board);
 
-	@Test
-	public void runMinesweeperWithBombsInCorners() throws FileNotFoundException {
-		int[][] board = new int[][] { { 5, 0, 0, 5 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 5, 0, 0, 5 } };
-		Minesweeper.calculateNeighbours(4, 4, board);
+        Approvals.verify(solvedBoard);
+    }
 
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		System.setOut(new PrintStream(out));
+    @Test
+    public void solvedBoardWithBombsInDiagonals() throws FileNotFoundException {
+        int[][] board = new int[][]{
+                {5, 0, 0, 5},
+                {0, 5, 5, 0},
+                {0, 5, 5, 0},
+                {5, 0, 0, 5}
+        };
 
-		Minesweeper.printOutTheGrid(4, 4, board);
+        String solvedBoard = solvedBoard(board);
 
-		Approvals.verify(out.toString());
-	}
+        Approvals.verify(solvedBoard);
+    }
 
-	@Test
-	public void runMinesweeperWithBombsInDiagonals() throws FileNotFoundException {
-		int[][] board = new int[][] { { 5, 0, 0, 5 }, { 0, 5, 5, 0 }, { 0, 5, 5, 0 }, { 5, 0, 0, 5 } };
-		Minesweeper.calculateNeighbours(4, 4, board);
+    @Test
+    public void solvedBoardWithSmallGrid() throws FileNotFoundException {
+        int[][] board = new int[][]{
+                {5, 5},
+                {5, 5}
+        };
 
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		System.setOut(new PrintStream(out));
+        String solvedBoard = solvedBoard(board);
 
-		Minesweeper.printOutTheGrid(4, 4, board);
+        Approvals.verify(solvedBoard);
+    }
 
-		Approvals.verify(out.toString());
-	}
+    private String solvedBoard(int[][] board) {
+        Minesweeper.calculateNeighbours(board.length, board[0].length, board);
 
-	@Test
-	public void runMinesweeperWithSmallGrid() throws FileNotFoundException {
-		int[][] board = new int[][] { { 5, 5 }, { 5, 5 } };
-		Minesweeper.calculateNeighbours(2, 2, board);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
 
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		System.setOut(new PrintStream(out));
+        Minesweeper.printOutTheGrid(board.length, board[0].length, board);
 
-		Minesweeper.printOutTheGrid(2, 2, board);
+        String solvedBoard = out.toString();
+        return solvedBoard;
+    }
 
-		Approvals.verify(out.toString());
-	}
 }
