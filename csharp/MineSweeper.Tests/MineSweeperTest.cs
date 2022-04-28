@@ -3,6 +3,8 @@ using ApprovalTests.Reporters;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using ApprovalTests.Combinations;
 using Xunit;
 
 namespace MineSweeper.Tests
@@ -10,80 +12,41 @@ namespace MineSweeper.Tests
     [UseReporter(typeof(DiffReporter))]
     public class MineSweeperTest
     {
-        public static class DemoPropertyDataSource
+        [Fact]
+        [UseReporter(typeof(DiffReporter))]
+        public void VerifyAllCombinations()
         {
-            private static readonly List<List<List<int>>> _data
-                = new List<List<List<int>>>
-                    {
-                        new List<List<int>> { new List<int>() { 5, 0, 0, 5 },
-            new List<int>() { 0, 0, 0, 0 }, new List<int>() { 0, 0, 0, 0 },
-                       new List<int>() { 5, 0, 0, 5 }
-                    } };
+            IEnumerable<int> gridWidthValues = new List<int>() { 2, 3, 4 };
+            IEnumerable<int> gridHeightValues = new List<int>() { 2, 3, 4 };
+            IEnumerable<int> numberOfMinesValues = new List<int>() { 0, 1, 2, 3, 4 };
+            IEnumerable<int> randomSeedValues = Enumerable.Range(1, 4).ToList();
 
-            public static IEnumerable<List<List<int>>> TestData
-            {
-                get { return _data; }
-            }
+            CombinationApprovals.VerifyAllCombinations(
+                this.MinesweeperMainForTest,
+                gridWidthValues,
+                gridHeightValues,
+                numberOfMinesValues,
+                randomSeedValues);
         }
 
-        [Fact]
-        public void RunMinesweeper()
+        private string MinesweeperMainForTest(
+            int gridWith,
+            int gridHeight,
+            int numberOfMines,
+            int randomSeed)
         {
-            int[,] board = new int[,] { { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 5, 0 }, { 0, 0, 0, 0 } };
-            Minesweeper.CalculateNeighbours(4, 4, board);
+            var outputWriter = new StringWriter();
+            Console.SetOut(outputWriter);
 
-            var sw = new StringWriter();
-            Console.SetOut(sw);
-            string result = sw.ToString();
+            Minesweeper.RandomGenerator = new Random(randomSeed);
 
-            Minesweeper.PrintOutTheGrid(4, 4, board);
+            Minesweeper.Main(new string[] {
+                gridWith.ToString(),
+                gridHeight.ToString(),
+                numberOfMines.ToString()
+            });
 
-            Approvals.Verify(sw.ToString());
-        }
-
-        [Fact]
-        public void RunMinesweeperWithBombsInCorners()
-        {
-            int[,] board = new int[,] { { 5, 0, 0, 5 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 5, 0, 0, 5 } };
-            Minesweeper.CalculateNeighbours(4, 4, board);
-
-            var sw = new StringWriter();
-            Console.SetOut(sw);
-            string result = sw.ToString();
-
-            Minesweeper.PrintOutTheGrid(4, 4, board);
-
-            Approvals.Verify(sw.ToString());
-        }
-
-        [Fact]
-        public void runMinesweeperWithBombsInDiagonals()
-        {
-            int[,] board = new int[,] { { 5, 0, 0, 5 }, { 0, 5, 5, 0 }, { 0, 5, 5, 0 }, { 5, 0, 0, 5 } };
-            Minesweeper.CalculateNeighbours(4, 4, board);
-
-            var sw = new StringWriter();
-            Console.SetOut(sw);
-            string result = sw.ToString();
-
-            Minesweeper.PrintOutTheGrid(4, 4, board);
-
-            Approvals.Verify(sw.ToString());
-        }
-
-        [Fact]
-        public void runMinesweeperWithSmallGrid()
-        {
-            int[,] board = new int[,] { { 5, 5 }, { 5, 5 } };
-            Minesweeper.CalculateNeighbours(2, 2, board);
-
-            var sw = new StringWriter();
-            Console.SetOut(sw);
-            string result = sw.ToString();
-
-            Minesweeper.PrintOutTheGrid(2, 2, board);
-
-            Approvals.Verify(sw.ToString());
+            return outputWriter.ToString();
         }
     }
 }
